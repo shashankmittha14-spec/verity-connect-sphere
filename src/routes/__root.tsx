@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TruthCheck — AI-verified fact-checking" },
+      { title: "TruthCheck — Fact-check any claim in seconds" },
       {
         name: "description",
         content:
@@ -87,6 +87,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "TruthCheck" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "TruthCheck — Fact-check any claim in seconds" },
+      { name: "twitter:title", content: "TruthCheck — Fact-check any claim in seconds" },
+      { name: "description", content: "Paste a suspicious claim, headline, or forwarded message. TruthCheck returns an AI-verified verdict, confidence score, and credible sources." },
+      { property: "og:description", content: "Paste a suspicious claim, headline, or forwarded message. TruthCheck returns an AI-verified verdict, confidence score, and credible sources." },
+      { name: "twitter:description", content: "Paste a suspicious claim, headline, or forwarded message. TruthCheck returns an AI-verified verdict, confidence score, and credible sources." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/27c5261b-bcf7-4304-9a2a-0bca903c9c07/id-preview-931776e5--c90b4f78-2ed3-47c0-9c80-1be85d8e3a8b.lovable.app-1783257119646.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/27c5261b-bcf7-4304-9a2a-0bca903c9c07/id-preview-931776e5--c90b4f78-2ed3-47c0-9c80-1be85d8e3a8b.lovable.app-1783257119646.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
