@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      checks: {
+        Row: {
+          claim_text: string
+          correctness: number
+          created_at: string
+          full_reasoning: string
+          id: string
+          platform: string | null
+          short_reasoning: string
+          source_channel: string
+          sources: Json
+          verdict: string
+        }
+        Insert: {
+          claim_text: string
+          correctness: number
+          created_at?: string
+          full_reasoning: string
+          id?: string
+          platform?: string | null
+          short_reasoning: string
+          source_channel?: string
+          sources?: Json
+          verdict: string
+        }
+        Update: {
+          claim_text?: string
+          correctness?: number
+          created_at?: string
+          full_reasoning?: string
+          id?: string
+          platform?: string | null
+          short_reasoning?: string
+          source_channel?: string
+          sources?: Json
+          verdict?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
