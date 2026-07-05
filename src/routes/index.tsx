@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate, useServerFn } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Loader2, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { runCheckClaim } from "@/lib/checks.functions";
