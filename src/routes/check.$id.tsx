@@ -70,10 +70,7 @@ function CheckDetail() {
 
         <article className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <VerdictBadge verdict={data.verdict as Verdict} size="lg" />
-            <span className="text-sm text-muted-foreground">
-              Confidence <span className="font-semibold text-foreground">{data.correctness}%</span>
-            </span>
+            <VerdictBadge verdict={data.verdict as Verdict} correctness={data.correctness} size="lg" />
             <span className="ml-auto text-xs text-muted-foreground">via {data.source_channel}</span>
           </div>
 
