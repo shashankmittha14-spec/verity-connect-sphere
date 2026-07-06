@@ -1,28 +1,33 @@
-import { Check, X, HelpCircle } from "lucide-react";
+import { Check, AlertTriangle, HelpCircle } from "lucide-react";
 import type { Verdict } from "@/lib/checks.server";
 
-const CONFIG: Record<Verdict, { label: string; icon: typeof Check; bg: string; fg: string }> = {
+const CONFIG: Record<Verdict, { suffix: string; icon: typeof Check; classes: string }> = {
   likely_true: {
-    label: "Likely True",
+    suffix: "True",
     icon: Check,
-    bg: "bg-[var(--color-verdict-true)]",
-    fg: "text-[var(--color-verdict-true-foreground)]",
+    classes: "bg-[var(--color-verdict-true)]/12 text-[var(--color-verdict-true)] ring-1 ring-inset ring-[var(--color-verdict-true)]/30",
   },
   likely_fake: {
-    label: "Likely Fake",
-    icon: X,
-    bg: "bg-[var(--color-verdict-fake)]",
-    fg: "text-[var(--color-verdict-fake-foreground)]",
+    suffix: "Fake",
+    icon: AlertTriangle,
+    classes: "bg-[var(--color-verdict-fake)]/10 text-[var(--color-verdict-fake)] ring-1 ring-inset ring-[var(--color-verdict-fake)]/25",
   },
   unverified: {
-    label: "Unverified",
+    suffix: "Unverified",
     icon: HelpCircle,
-    bg: "bg-[var(--color-verdict-unverified)]",
-    fg: "text-[var(--color-verdict-unverified-foreground)]",
+    classes: "bg-muted text-muted-foreground ring-1 ring-inset ring-border",
   },
 };
 
-export function VerdictBadge({ verdict, size = "md" }: { verdict: Verdict; size?: "sm" | "md" | "lg" }) {
+export function VerdictBadge({
+  verdict,
+  correctness,
+  size = "md",
+}: {
+  verdict: Verdict;
+  correctness?: number;
+  size?: "sm" | "md" | "lg";
+}) {
   const cfg = CONFIG[verdict];
   const Icon = cfg.icon;
   const sizing =
@@ -31,13 +36,18 @@ export function VerdictBadge({ verdict, size = "md" }: { verdict: Verdict; size?
       : size === "sm"
         ? "text-[10px] px-2 py-0.5"
         : "text-xs px-3 py-1";
+
+  const label =
+    verdict === "unverified"
+      ? "Unverified"
+      : typeof correctness === "number"
+        ? `${Math.round(correctness)}% ${cfg.suffix}`
+        : cfg.suffix;
+
   return (
-    <span
-      className={`verdict-badge ${cfg.bg} ${cfg.fg} ${sizing}`}
-      data-verdict={verdict}
-    >
+    <span className={`verdict-badge ${cfg.classes} ${sizing}`} data-verdict={verdict}>
       <Icon className={size === "lg" ? "size-4" : "size-3"} strokeWidth={2.5} />
-      {cfg.label}
+      {label}
     </span>
   );
 }
