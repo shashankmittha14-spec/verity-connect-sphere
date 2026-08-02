@@ -177,6 +177,8 @@ export async function checkClaim(input: CheckClaimInput): Promise<CheckRow> {
         short_reasoning: "The fact-checker could not produce a structured verdict.",
         full_reasoning:
           "The AI model returned a response that could not be parsed. Please rephrase the claim and try again.",
+        simple_explanation:
+          "We could not check this message properly. Please try again, and do not share it until you are sure.",
         sources: [],
       };
     } else {
@@ -198,10 +200,13 @@ export async function checkClaim(input: CheckClaimInput): Promise<CheckRow> {
       correctness,
       short_reasoning: parsed.short_reasoning.slice(0, 500),
       full_reasoning: parsed.full_reasoning,
+      simple_explanation: parsed.simple_explanation,
       sources,
       platform: input.platform ?? null,
       source_channel: input.source_channel ?? "web",
+      source_type: input.source_type ?? "text",
     })
+
     .select("*")
     .single();
 
