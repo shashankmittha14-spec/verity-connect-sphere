@@ -5,6 +5,7 @@ import { Loader2, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { runCheckClaim } from "@/lib/checks.functions";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VerdictBadge } from "@/components/VerdictBadge";
+import { ScreenshotUploader } from "@/components/ScreenshotUploader";
 import type { Verdict } from "@/lib/checks.server";
 
 export const Route = createFileRoute("/")({
