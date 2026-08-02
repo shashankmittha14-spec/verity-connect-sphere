@@ -49,6 +49,16 @@ export const Route = createFileRoute("/check/$id")({
 function CheckDetail() {
   const { id } = Route.useParams();
   const { data } = useSuspenseQuery(checkQuery(id));
+  const [simple, setSimple] = useState(false);
+
+  useEffect(() => {
+    setSimple(window.localStorage.getItem("truthcheck.simpleMode") === "1");
+  }, []);
+
+  function toggleSimple(next: boolean) {
+    setSimple(next);
+    window.localStorage.setItem("truthcheck.simpleMode", next ? "1" : "0");
+  }
 
   const created = new Date(data.created_at).toLocaleString(undefined, {
     dateStyle: "medium",
@@ -56,6 +66,9 @@ function CheckDetail() {
   });
 
   const sources = Array.isArray(data.sources) ? (data.sources as Array<{ title: string; url: string }>) : [];
+  const simpleText =
+    data.simple_explanation ??
+    "A plain-language summary isn't available for this check — see the detailed analysis below.";
 
   return (
     <div className="min-h-screen">
@@ -70,24 +83,62 @@ function CheckDetail() {
 
         <article className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <VerdictBadge verdict={data.verdict as Verdict} correctness={data.correctness} size="lg" />
+            {simple ? (
+              <PlainVerdictBadge verdict={data.verdict as Verdict} />
+            ) : (
+              <VerdictBadge verdict={data.verdict as Verdict} correctness={data.correctness} size="lg" />
+            )}
             <span className="ml-auto text-xs text-muted-foreground">via {data.source_channel}</span>
+          </div>
+
+          <div
+            role="tablist"
+            aria-label="Explanation detail level"
+            className="mb-5 inline-flex rounded-lg bg-muted p-1"
+          >
+            {([
+              { id: false, label: "Detailed" },
+              { id: true, label: "Explain simply" },
+            ] as const).map((t) => (
+              <button
+                key={String(t.id)}
+                role="tab"
+                type="button"
+                aria-selected={simple === t.id}
+                onClick={() => toggleSimple(t.id)}
+                className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition ${
+                  simple === t.id ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
           <blockquote className="mb-6 border-l-4 border-accent pl-4 font-display text-2xl leading-snug text-foreground">
             “{data.claim_text}”
           </blockquote>
 
-          <div className="mb-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary" style={{ width: `${data.correctness}%` }} />
-          </div>
-
-          <section>
-            <h2 className="text-lg">Analysis</h2>
-            <div className="mt-2 space-y-3 whitespace-pre-wrap text-pretty leading-relaxed text-foreground/90">
-              {data.full_reasoning}
+          {!simple && (
+            <div className="mb-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${data.correctness}%` }} />
             </div>
-          </section>
+          )}
+
+          {simple ? (
+            <section>
+              <h2 className="text-lg">In simple words</h2>
+              <p className="mt-2 text-pretty text-xl leading-relaxed text-foreground/90">{simpleText}</p>
+            </section>
+          ) : (
+            <section>
+              <h2 className="text-lg">Analysis</h2>
+              <div className="mt-2 space-y-3 whitespace-pre-wrap text-pretty leading-relaxed text-foreground/90">
+                {data.full_reasoning}
+              </div>
+            </section>
+          )}
+
 
           {sources.length > 0 && (
             <section className="mt-8">
