@@ -215,8 +215,10 @@ export function toCompact(row: CheckRow): CompactCheckResult {
     verdict: row.verdict as Verdict,
     correctness: row.correctness,
     short_reasoning: row.short_reasoning,
+    simple_explanation: row.simple_explanation ?? null,
   };
 }
+
 
 export async function getCheckById(id: string): Promise<CheckRow | null> {
   const supabase = serverSupabase();
