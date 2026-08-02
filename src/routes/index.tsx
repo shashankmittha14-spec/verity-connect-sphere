@@ -5,6 +5,7 @@ import { Loader2, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { runCheckClaim } from "@/lib/checks.functions";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VerdictBadge } from "@/components/VerdictBadge";
+import { ScreenshotUploader } from "@/components/ScreenshotUploader";
 import type { Verdict } from "@/lib/checks.server";
 
 export const Route = createFileRoute("/")({
@@ -34,12 +35,17 @@ type CompactResult = {
   verdict: Verdict;
   correctness: number;
   short_reasoning: string;
+  simple_explanation: string | null;
 };
+
+type Mode = "text" | "screenshot";
 
 function Index() {
   const runCheck = useServerFn(runCheckClaim);
   const navigate = useNavigate();
+  const [mode, setMode] = useState<Mode>("text");
   const [claim, setClaim] = useState("");
+  const [ocrReview, setOcrReview] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompactResult | null>(null);
@@ -54,7 +60,15 @@ function Index() {
     }
     setLoading(true);
     try {
-      const res = await runCheck({ data: { claim_text: claim, compact: true } });
+      const sourceType: "text" | "screenshot" | "url" =
+        mode === "screenshot" && ocrReview
+          ? "screenshot"
+          : /https?:\/\//i.test(claim)
+            ? "url"
+            : "text";
+      const res = await runCheck({
+        data: { claim_text: claim, compact: true, source_type: sourceType },
+      });
       if (res.compact) setResult(res.compact);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -77,40 +91,101 @@ function Index() {
             <span className="italic text-accent">actually</span> true?
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-pretty text-muted-foreground">
-            Paste any claim, viral post, or forwarded message. TruthCheck returns a verdict,
-            a confidence score, and credible sources — in seconds.
+            Paste any claim, viral post, or forwarded message — or upload a screenshot. TruthCheck
+            returns a verdict, a confidence score, and credible sources — in seconds.
           </p>
         </section>
 
         <form onSubmit={onSubmit} className="mt-10 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
-          <label htmlFor="claim" className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            The claim
-          </label>
-          <textarea
-            id="claim"
-            value={claim}
-            onChange={(e) => setClaim(e.target.value)}
-            placeholder="e.g. 'Drinking hot water cures COVID-19'"
-            rows={4}
-            maxLength={5000}
-            disabled={loading}
-            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-ring focus:ring-2 focus:ring-ring/20"
-          />
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <span className="text-xs text-muted-foreground">{claim.length}/5000</span>
-            <button
-              type="submit"
-              disabled={loading || claim.trim().length < 3}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-              {loading ? "Checking…" : "Check claim"}
-            </button>
+          <div role="tablist" aria-label="Claim input method" className="mb-4 inline-flex rounded-lg bg-muted p-1">
+            {([
+              { id: "text", label: "Paste Text" },
+              { id: "screenshot", label: "Upload Screenshot" },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                type="button"
+                aria-selected={mode === t.id}
+                disabled={loading}
+                onClick={() => {
+                  setMode(t.id);
+                  setError(null);
+                  if (t.id === "text") setOcrReview(false);
+                }}
+                className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition ${
+                  mode === t.id ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
+
+          {mode === "screenshot" && !ocrReview ? (
+            <ScreenshotUploader
+              disabled={loading}
+              onExtracted={(text) => {
+                setClaim(text.slice(0, 5000));
+                setOcrReview(true);
+                setError(null);
+              }}
+            />
+          ) : (
+            <>
+              <label htmlFor="claim" className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {ocrReview ? "Extracted text — review before checking" : "The claim"}
+              </label>
+              {ocrReview && (
+                <p className="mb-2 text-sm text-muted-foreground">
+                  We extracted this text — please review and correct if needed, then click Check.
+                </p>
+              )}
+              <textarea
+                id="claim"
+                value={claim}
+                onChange={(e) => setClaim(e.target.value)}
+                placeholder="e.g. 'Drinking hot water cures COVID-19'"
+                rows={ocrReview ? 7 : 4}
+                maxLength={5000}
+                disabled={loading}
+                className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-ring focus:ring-2 focus:ring-ring/20"
+              />
+            </>
+          )}
+          {(mode === "text" || ocrReview) && (
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <span className="text-xs text-muted-foreground">{claim.length}/5000</span>
+              <div className="flex items-center gap-2">
+                {ocrReview && (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => {
+                      setOcrReview(false);
+                      setClaim("");
+                    }}
+                    className="rounded-lg border border-border bg-background px-3.5 py-2 text-sm hover:bg-muted"
+                  >
+                    Use another image
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={loading || claim.trim().length < 3}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                  {loading ? "Checking…" : "Check claim"}
+                </button>
+              </div>
+            </div>
+          )}
           {error && (
             <p className="mt-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
           )}
         </form>
+
 
         {result && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm">

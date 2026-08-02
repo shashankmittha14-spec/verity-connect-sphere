@@ -5,6 +5,7 @@ const CheckClaimInput = z.object({
   claim_text: z.string().min(3).max(5000),
   platform: z.string().max(120).nullish(),
   compact: z.boolean().optional(),
+  source_type: z.enum(["text", "screenshot", "url"]).optional(),
 });
 
 export const runCheckClaim = createServerFn({ method: "POST" })
@@ -15,9 +16,11 @@ export const runCheckClaim = createServerFn({ method: "POST" })
       claim_text: data.claim_text,
       platform: data.platform ?? null,
       source_channel: "web",
+      source_type: data.source_type ?? "text",
     });
     return data.compact ? { compact: toCompact(row) } : { row };
   });
+
 
 const GetCheckInput = z.object({ id: z.string().uuid() });
 

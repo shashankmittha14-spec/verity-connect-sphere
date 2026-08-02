@@ -23,7 +23,9 @@ export type Database = {
           id: string
           platform: string | null
           short_reasoning: string
+          simple_explanation: string | null
           source_channel: string
+          source_type: string
           sources: Json
           verdict: string
         }
@@ -35,7 +37,9 @@ export type Database = {
           id?: string
           platform?: string | null
           short_reasoning: string
+          simple_explanation?: string | null
           source_channel?: string
+          source_type?: string
           sources?: Json
           verdict: string
         }
@@ -47,7 +51,9 @@ export type Database = {
           id?: string
           platform?: string | null
           short_reasoning?: string
+          simple_explanation?: string | null
           source_channel?: string
+          source_type?: string
           sources?: Json
           verdict?: string
         }

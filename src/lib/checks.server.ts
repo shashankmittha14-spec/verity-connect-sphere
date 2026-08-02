@@ -18,6 +18,7 @@ const AiResultSchema = z.object({
   correctness: z.number().int().min(0).max(100),
   short_reasoning: z.string(),
   full_reasoning: z.string(),
+  simple_explanation: z.string(),
   sources: z.array(
     z.object({
       title: z.string(),
@@ -29,11 +30,13 @@ const AiResultSchema = z.object({
 export type CheckRow = Database["public"]["Tables"]["checks"]["Row"];
 export type Verdict = z.infer<typeof VerdictEnum>;
 export type SourceChannel = "web" | "extension" | "whatsapp";
+export type SourceType = "text" | "screenshot" | "url";
 
 export interface CheckClaimInput {
   claim_text: string;
   platform?: string | null;
   source_channel?: SourceChannel;
+  source_type?: SourceType;
 }
 
 export interface CompactCheckResult {
@@ -41,7 +44,9 @@ export interface CompactCheckResult {
   verdict: Verdict;
   correctness: number;
   short_reasoning: string;
+  simple_explanation: string | null;
 }
+
 
 function serverSupabase() {
   const url = process.env.SUPABASE_URL;
@@ -65,6 +70,7 @@ Return JSON with:
     * unverified => 40 < correctness < 60
 - short_reasoning: 1-2 sentences, under 200 characters, plain language
 - full_reasoning: 2-4 paragraphs explaining the evidence, referencing the fetched page content when provided
+- simple_explanation: 1-2 sentences in plain, everyday language, avoiding technical terms, written as if explaining to someone's grandparent. Example style: "This message is not true. Real news organizations have not reported this, and the way it's written tries to make you feel scared or excited so you'll share it quickly without checking."
 - sources: array of {title, url} — 1-4 credible references (real news outlets, official bodies, primary sources). Use real, well-known URLs. If a specific URL is uncertain, use the outlet's homepage rather than fabricating a path.
 
 Rules when the claim is a URL:
@@ -172,6 +178,8 @@ export async function checkClaim(input: CheckClaimInput): Promise<CheckRow> {
         short_reasoning: "The fact-checker could not produce a structured verdict.",
         full_reasoning:
           "The AI model returned a response that could not be parsed. Please rephrase the claim and try again.",
+        simple_explanation:
+          "We could not check this message properly. Please try again, and do not share it until you are sure.",
         sources: [],
       };
     } else {
@@ -193,10 +201,13 @@ export async function checkClaim(input: CheckClaimInput): Promise<CheckRow> {
       correctness,
       short_reasoning: parsed.short_reasoning.slice(0, 500),
       full_reasoning: parsed.full_reasoning,
+      simple_explanation: parsed.simple_explanation,
       sources,
       platform: input.platform ?? null,
       source_channel: input.source_channel ?? "web",
+      source_type: input.source_type ?? "text",
     })
+
     .select("*")
     .single();
 
@@ -210,8 +221,10 @@ export function toCompact(row: CheckRow): CompactCheckResult {
     verdict: row.verdict as Verdict,
     correctness: row.correctness,
     short_reasoning: row.short_reasoning,
+    simple_explanation: row.simple_explanation ?? null,
   };
 }
+
 
 export async function getCheckById(id: string): Promise<CheckRow | null> {
   const supabase = serverSupabase();
