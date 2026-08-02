@@ -63,3 +63,28 @@ export function VerdictBadge({
     </span>
   );
 }
+
+export const PLAIN_VERDICT_LABEL: Record<Verdict, string> = {
+  likely_true: "This appears to be TRUE",
+  likely_fake: "This is probably NOT true",
+  unverified: "We can't confirm this yet",
+};
+
+export function PlainVerdictBadge({ verdict }: { verdict: Verdict }) {
+  const Icon = ICON[verdict];
+  const tone =
+    verdict === "likely_true"
+      ? "bg-[var(--color-verdict-true)]/12 text-[var(--color-verdict-true)]"
+      : verdict === "likely_fake"
+        ? "bg-[var(--color-verdict-fake)]/12 text-[var(--color-verdict-fake)]"
+        : "bg-muted text-foreground";
+  return (
+    <span
+      className={`inline-flex items-center gap-2.5 rounded-xl px-4 py-3 text-lg font-semibold ring-1 ring-inset ring-border sm:text-xl ${tone}`}
+      data-verdict={verdict}
+    >
+      <Icon className="size-6 shrink-0" strokeWidth={2.5} />
+      {PLAIN_VERDICT_LABEL[verdict]}
+    </span>
+  );
+}
