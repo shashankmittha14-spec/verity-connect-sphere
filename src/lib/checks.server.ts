@@ -18,6 +18,7 @@ const AiResultSchema = z.object({
   correctness: z.number().int().min(0).max(100),
   short_reasoning: z.string(),
   full_reasoning: z.string(),
+  simple_explanation: z.string(),
   sources: z.array(
     z.object({
       title: z.string(),
@@ -29,11 +30,13 @@ const AiResultSchema = z.object({
 export type CheckRow = Database["public"]["Tables"]["checks"]["Row"];
 export type Verdict = z.infer<typeof VerdictEnum>;
 export type SourceChannel = "web" | "extension" | "whatsapp";
+export type SourceType = "text" | "screenshot" | "url";
 
 export interface CheckClaimInput {
   claim_text: string;
   platform?: string | null;
   source_channel?: SourceChannel;
+  source_type?: SourceType;
 }
 
 export interface CompactCheckResult {
@@ -41,7 +44,9 @@ export interface CompactCheckResult {
   verdict: Verdict;
   correctness: number;
   short_reasoning: string;
+  simple_explanation: string | null;
 }
+
 
 function serverSupabase() {
   const url = process.env.SUPABASE_URL;
