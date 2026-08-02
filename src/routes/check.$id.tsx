@@ -1,10 +1,10 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
 import { fetchCheck } from "@/lib/checks.functions";
 import { SiteHeader } from "@/components/SiteHeader";
-import { VerdictBadge } from "@/components/VerdictBadge";
+import { VerdictBadge, PlainVerdictBadge } from "@/components/VerdictBadge";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import type { Verdict } from "@/lib/checks.server";
 
