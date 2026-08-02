@@ -70,6 +70,7 @@ Return JSON with:
     * unverified => 40 < correctness < 60
 - short_reasoning: 1-2 sentences, under 200 characters, plain language
 - full_reasoning: 2-4 paragraphs explaining the evidence, referencing the fetched page content when provided
+- simple_explanation: 1-2 sentences in plain, everyday language, avoiding technical terms, written as if explaining to someone's grandparent. Example style: "This message is not true. Real news organizations have not reported this, and the way it's written tries to make you feel scared or excited so you'll share it quickly without checking."
 - sources: array of {title, url} — 1-4 credible references (real news outlets, official bodies, primary sources). Use real, well-known URLs. If a specific URL is uncertain, use the outlet's homepage rather than fabricating a path.
 
 Rules when the claim is a URL:
